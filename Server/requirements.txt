@@ -1,0 +1,6 @@
+requests
+flask
+flask-cors
+google-genai
+PyQt6
+werkzeug
