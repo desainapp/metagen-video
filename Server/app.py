@@ -15,7 +15,7 @@ from PyQt6.QtGui import QFont, QPalette, QColor
 from werkzeug.serving import make_server
 
 # Global variables
-api_keys = ["AIzaSyCNDlnQmPaihCSdqqu_5AzQ_ywJSvj0s1c"]  # Default, can be overridden
+api_keys = ["API_KEY"]  # Default, can be overridden
 server_running = False
 log_text = ""
 
@@ -179,7 +179,7 @@ class ServerGUI(QWidget):
         # API Keys Input
         layout.addWidget(QLabel("API Keys (one per line):"))
         self.api_input = QTextEdit()
-        self.api_input.setPlainText("AIzaSyCNDlnQmPaihCSdqqu_5AzQ_ywJSvj0s1c")
+        self.api_input.setPlainText("API_KEY")
         self.api_input.setMinimumHeight(100)
         layout.addWidget(self.api_input)
 
