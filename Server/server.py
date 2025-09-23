@@ -2,10 +2,10 @@ import time
 import os
 import json
 import requests
+import tempfile
 from flask import Flask, request, jsonify
 from google import genai
 from flask_cors import CORS
-from supabase import create_client, Client
 import uuid
 import re
 
@@ -14,7 +14,6 @@ import re
 # ==========================
 app = Flask(__name__)
 CORS(app)
-
 
 API_KEY = "API_KEY"
 client = genai.Client(api_key=API_KEY)
@@ -28,7 +27,6 @@ The user will upload an video. Your task is to analyze the image and generate th
    - Describe the main object and style.
    - No special characters.
 
-
 3. **Keywords**
    - 40–45 additional relevant keywords.
    - Include synonyms, related events, styles, and uses.
@@ -40,7 +38,7 @@ The user will upload an video. Your task is to analyze the image and generate th
    - 1–2 sentences describing the video in detail.
    - Mention colors, style, and background.
    - Avoid marketing language.
-   - Avoid sentence like "This is vieo of..", just straight to point
+   - Avoid sentence like "This is video of..", just straight to point
 
 Return ONLY pure JSON in this format without code block, markdown, or extra text:
 {
@@ -71,13 +69,14 @@ def generate_video_metadata():
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
         response = requests.get(video_url, stream=True, headers=headers)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        response.raise_for_status()
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"Failed to download video: {e}"}), 400
 
-    # Save file temporarily
+    # Save file temporarily (cross-platform safe)
     temp_filename = f"{uuid.uuid4()}.mp4"
-    temp_filepath = os.path.join("/tmp", temp_filename)
+    temp_dir = tempfile.gettempdir()
+    temp_filepath = os.path.join(temp_dir, temp_filename)
     
     with open(temp_filepath, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
@@ -119,7 +118,7 @@ def generate_video_metadata():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
-        # Clean up the uploaded file from Google and the temporary local file
+        # Clean up uploaded file (remote + local)
         if uploaded_file:
             try:
                 client.files.delete(name=uploaded_file.name)
